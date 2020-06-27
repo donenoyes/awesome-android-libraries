@@ -57,3 +57,19 @@ https://github.com/inorichi/injekt/
 https://github.com/bluelinelabs/Conductor
 
 https://github.com/mikepenz/AboutLibraries
+
+https://github.com/pinterest/ktlint
+
+https://github.com/tbruyelle/RxPermissions
+
+https://github.com/ocpsoft/prettytime
+
+https://github.com/google/libphonenumber
+
+https://github.com/uccmawei/FingerprintIdentify
+
+https://github.com/daimajia/AndroidViewAnimations
+
+https://github.com/daimajia/AnimationEasingFunctions
+
+https://github.com/aritraroy/PatternLockView
