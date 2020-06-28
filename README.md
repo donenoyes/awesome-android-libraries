@@ -73,3 +73,6 @@ https://github.com/daimajia/AndroidViewAnimations
 https://github.com/daimajia/AnimationEasingFunctions
 
 https://github.com/aritraroy/PatternLockView
+
+https://github.com/nabinbhandari/Android-Permissions
+
