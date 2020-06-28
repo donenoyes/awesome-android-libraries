@@ -76,3 +76,6 @@ https://github.com/aritraroy/PatternLockView
 
 https://github.com/nabinbhandari/Android-Permissions
 
+https://github.com/gotev/android-upload-service
+
+https://github.com/permissions-dispatcher/PermissionsDispatcher
