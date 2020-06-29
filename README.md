@@ -79,3 +79,13 @@ https://github.com/nabinbhandari/Android-Permissions
 https://github.com/gotev/android-upload-service
 
 https://github.com/permissions-dispatcher/PermissionsDispatcher
+
+https://github.com/square/hephaestus
+
+https://github.com/Chrisvin/BlobBackgroundLayout
+
+https://github.com/arhanashik/LinkPreview
+
+https://github.com/ubarua123/SixDigitPinView
+
+https://github.com/EsmaeelNabil/Did-You-Mean
