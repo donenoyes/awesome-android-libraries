@@ -1,5 +1,8 @@
 # Awesome Android Libraries
 
+CHANGES MADE #1 **********************************
+
+
 https://github.com/ben-manes/gradle-versions-plugin
 
 https://github.com/diffplug/spotless
