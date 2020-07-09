@@ -1,6 +1,7 @@
 # Awesome Android Libraries
 
 CHANGES MADE #1 **********************************
+CHANGES MADE #2 **********************************
 
 
 https://github.com/ben-manes/gradle-versions-plugin
