@@ -4,7 +4,7 @@ CHANGES MADE #1 **********************************
 CHANGES MADE #2 **********************************
 
 
-BY KIM JIWON GGGGGGGGGGGGGGGIT 1-2-1-2-
+BY KIM JIWON GIT 1-2-1-2-
 
 
 https://github.com/ben-manes/gradle-versions-plugin
