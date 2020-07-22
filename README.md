@@ -46,6 +46,8 @@ https://github.com/haroldadmin/WhatTheStack
 
 ## Tech Stack/Libraries
 
+## Inorichi Inject - MVP
+
 
 https://github.com/haroldadmin/opengraphKt
 
