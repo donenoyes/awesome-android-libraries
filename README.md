@@ -43,6 +43,10 @@ https://github.com/dlew/joda-time-android
 
 https://github.com/haroldadmin/WhatTheStack
 
+
+## Tech Stack/Libraries
+
+
 https://github.com/haroldadmin/opengraphKt
 
 https://github.com/chrisbanes/insetter
