@@ -1,534 +1,300 @@
-
-<h1 align="center">Learn Jetpack Compose Android</h1></br>
-
-<p align="center">
-:eyeglasses: A continuously updated list on learning Jetpack compose for Android apps.
-</p>
+<p><strong>Table of Contents</strong></p>
+<ol>
+  <li><a href="#early-days-of-android">Early days of Dynamic Animation</a></li>
+  <li><a href="#android-stack">Producing Animation</a></li>
+  <li><a href="#linux-kernel">Emergence of Lottie</a></li>
+  <li><a href="#secure-element">After Effects and Bodymovin</a></li>
+  <li><a href="#hardware-abstraction-layer">Bodymovin JSON attributes</a></li>
+  <li><a href="#native-libraries">Layers</a></li>
+  <li><a href="#runtime">Core Classes of Lottie</a></li>
+  <li><a href="#framework">Screen Adaptation of Lottie Animations</a></li>
+  <li><a href="#apps">Overview</a></li>
+  <li><a href="#references">References</a></li>
+  <li><a href="#contributions">Contributions</a></li>
+  
+</ol>
 <br>
+<p><strong>Understanding the internals of Lottie-Android and the workflow of Loading and Rendering the Animation file</strong> blog post aims to be the starting point for developers to get familiar with the core classes, methods of Lottie source code plus the understanding of After Effects plugin Bodymovin which exports JSON required by Lottie to work.</p>
+<br><br>
 
-<p align="center">
-  <a href="#"><img alt="Awesome Android Kotlin Apps Count badge" src="https://badgen.net/badge/Apps/95?icon=https://raw.githubusercontent.com/androiddevnotes/learn-jetpack-compose-android/master/assets/count.svg&color=0984e3"/></a>
-  <a href="#"><img alt="Android Language Badge" src="https://badgen.net/badge/OS/Android?icon=https://raw.githubusercontent.com/androiddevnotes/learn-jetpack-compose-android/master/assets/android.svg&color=3ddc84"/></a>
-  <a href="#"><img alt="Kotlin Language Badge" src="https://badgen.net/badge/language/Kotlin?icon=https://raw.githubusercontent.com/androiddevnotes/learn-jetpack-compose-android/master/assets/kotlin.svg&color=f18e33"/></a>
-  <a href="https://github.com/androiddevnotes"><img alt="androiddevnotes GitHub badge" src="https://badgen.net/badge/GitHub/androiddevnotes?icon=github&color=24292e"/></a>
 
-</p>
-
+<!-- SECTION HEADINGS -->
+<h3 id="early-days-of-android">Early days of Dynamic Animation</h3>
 <br>
-<p align="center">
-<img width="320px" src="assets/androiddevnotes.png" alt="androiddevnotes logo"></img>
-</p><br>
+<p>In the year 2014 with the release of Android 5.0 (API 21) Lollipop, <i><strong>Android supported Vector Drawables and Animated Vector Drawables.</strong></i></p>
 
-**Learn Jetpack Compose Android** aims to be your starting point to find the finest learning content for Jetpack Compose suits of libraries.
+<p>But even with the support for Animated Vector Drawables, <strong>making dynamic vector animation was not easy.</strong> It couldn't be loaded programmatically or over the internet.</p>
 
-Content in languages other than English is tagged according to ISO 639-2 codes.
+<p>Moreover, it had issues with resolving vector path transformation animation in Android 4.x</p>
 
-## Contents
-
-- [Docs, Codelabs, and Official Projects](https://github.com/androiddevnotes/learn-jetpack-compose-android#mvvm)    
-
-- [Articles and Tutorials](https://github.com/androiddevnotes/learn-jetpack-compose-android#articles-and-tutorials)
-
-- [Slides](https://github.com/androiddevnotes/learn-jetpack-compose-android#slides)
-
-- [Talks, Conferences, and Interviews](https://github.com/androiddevnotes/learn-jetpack-compose-android#mvvm)
-
-- [Video Tutorials, Courses, and Playlists](https://github.com/androiddevnotes/learn-jetpack-compose-android#mvvm)
-
-- [Books](https://github.com/androiddevnotes/learn-jetpack-compose-android#books)
-
-- [Open-Source Projects](https://github.com/androiddevnotes/learn-jetpack-compose-android#open-source-projects)
-
-    - [Apps](https://github.com/androiddevnotes/learn-jetpack-compose-android#apps)
-    - [Libraries](https://github.com/androiddevnotes/learn-jetpack-compose-android#libraries)
-    - [Resources](https://github.com/androiddevnotes/learn-jetpack-compose-android#resources)
-
-- [Twitter Threads](https://github.com/androiddevnotes/learn-jetpack-compose-android#twitter-threads)
-
-- [Podcasts](https://github.com/androiddevnotes/learn-jetpack-compose-android#podcasts)
-
-- [Frequently Asked Questions on Jetpack Compose](https://github.com/androiddevnotes/learn-jetpack-compose-android#frequently-asked-questions-on-jetpack-compose)
-
-- [Discussions](https://github.com/androiddevnotes/learn-jetpack-compose-android#discussions)
-
-- [Communities](https://github.com/androiddevnotes/learn-jetpack-compose-android#community)
-
-
-
-:books: [**Tech Stack/Libraries**](https://github.com/androiddevnotes/learn-jetpack-compose-android#books-tech-stacklibraries)
-
-:memo: [**Contributing**](https://github.com/androiddevnotes/learn-jetpack-compose-android#memo-contributing)
-
-
-## Docs, Codelabs and Official Projects
-
-### Official Projects
-
-- https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-master-dev/ui
-
-    - Git repository on Jetpack Compose.
-
-- https://github.com/androidx/androidx/tree/androidx-master-dev/ui
-
-    - Development environment for Jetpack Compose. Synchronized with Jetpack's primary development branch on AOSP.
-
-- https://github.com/aosp-mirror/platform_frameworks_support/tree/androidx-master-dev/ui
-
-    - AOSP mirror of Git repository on Jetpack Compose.
-
-- https://issuetracker.google.com/issues?q=status:open%20componentid:612128
-
-    - Search Recent issues for Jetpack Compose Android.
-
-- https://issuetracker.google.com/issues/new?component=612128
-
-    - Create new issue for Jetpack Compose Android.
-
-- https://github.com/android/compose-samples
-
-    - Official Jetpack Compose Samples
-
-### Docs
-
-- https://developer.android.com/courses/pathways/compose
-
-    - Learn about Compose, a modern toolkit for building native Android UI. Test your knowledge of Compose and earn your Jetpack Compose badge.
-
-- https://developer.android.com/jetpack/compose
-
-    - Jetpack Compose project page.
-
-- https://developer.android.com/jetpack/compose/documentation
-
-    - Get started with Jetpack Compose
-
-### Codelabs
-
-- https://codelabs.developers.google.com/codelabs/jetpack-compose-basics/index.html
-
-    - Jetpack Compose basics
-
-    - In this codelab, you will learn * What Compose is * How to build UIs with Compose * How to manage state in composable functions * Data flow principles in Compose.
-
-- https://codelabs.developers.google.com/codelabs/jetpack-compose-migration/index.html
-
-    - Migrating to Jetpack Compose
-
-    - In this codelab, you'll be migrating parts of the Sunflower's plant details screen to Compose. We created a copy of the project for you to try out migrating a realistic app to Compose.🏉
-
-- https://codelabs.developers.google.com/codelabs/jetpack-compose-layouts/index.html
-    
-    - Layouts in Jetpack Compose
-    
-    - In this codelab, you'll learn how to use Compose's highest level of UI abstraction, Material Design, as well as low-level composables like Layout that allows you to measure and place elements on the screen
-
-- https://codelabs.developers.google.com/codelabs/jetpack-compose-theming/index.html
-
-    - Jetpack Compose Theming
-
-    - In this codelab you will learn how to use Jetpack Compose's theming APIs to style your application. We'll see how to customize colors, shapes and typography so that they're used consistently throughout your application, supporting multiple themes such as light & dark theme.
-
-- https://codelabs.developers.google.com/codelabs/jetpack-compose-state/index.html
-
-    - Using State in Jetpack Compose
-
-    - In this codelab you'll learn about the state and how it can be used and manipulated by Jetpack Compose.
-
-
-## Slides
-
-### Note: Find more Slides at https://cse.google.com/cse?cx=010150859881542981030%3Ahqhxyxpwtc4&ie=UTF-8&q=jetpack+compose&sa=Search
-
-- https://speakerdeck.com/vinaygaba/360-andev-2020-learning-jetpack-compose-by-example?slide=10
-
-    - 360|AnDev 2020: Learning Jetpack Compose By Example
-
-- https://speakerdeck.com/alexzhukovich/lets-build-an-android-ui-with-jetpack-compose [April 20, 2020]
-
-    - Let’s build an Android UI with Jetpack Compose by Alex Zhukovich
-
-- https://speakerdeck.com/yanzm/jetpack-compose-dounafalse-android-dev-summit-2019bao-gao-hui[November 15, 2019] [JA]
-
-    - Jetpack Compose どうなの？（Android Dev Summit 2019報告会）by Yuki Anzai
-
-- https://speakerdeck.com/lnicolet/mvi-with-jetpack-compose [September 09, 2019]
-
-    - MVI with Jetpack Compose by Luca Nicoletti
-
-
-- https://speakerdeck.com/lelandrichardson/react-meet-compose [July 12, 2019]
-
-    - React, Meet Compose by Leland Richardson
-
-- https://speakerdeck.com/ragunathjawahar/jetpack-compose-next-gen-kotlin-ui-toolkit-for-android [June 22, 2019]
-
-    - Jetpack Compose — Next Gen Kotlin UI Toolkit for Android
-
-- https://speakerdeck.com/takusemba/jetpack-compose [May 21, 2019]
-
-    - Jetpack Compose by TakuSemba
-
-
-## Talks, Conferences, and Interviews
-
-### [Android Developers](https://www.youtube.com/user/androiddevelopers)
-
-- https://www.youtube.com/watch?v=SMOhl9RK0BA [Aug 26, 2020]
-
-    - Thinking in Compose
-
-    - Jetpack Compose is the new next-generation UI toolkit. It uses a declarative component-based paradigm for building UIs easily and quickly. It’s written entirely in Kotlin and embraces the style and ergonomics of the Kotlin language. 
-
-- https://www.youtube.com/watch?v=DDd6IOlH3io [Aug 26, 2020]
-
-    - Compose by example
-
-    - We’ll walk through examples of theming, animation, layout, and more, demonstrating how to customize and combine components to build real UIs. 
-
-- https://www.youtube.com/watch?v=PjQdFmiDgwk [Aug 26, 2020]
-
-    - Compose for existing apps
-
-    - In this talk, you'll learn how to do that! We'll cover topics such as: adding Compose to your existing Views and embedding Views in Compose, using your existing View theme and current app architecture in Compose, testing all of that code, and much more. 
-
-- https://www.youtube.com/watch?v=exjL2kGPngI
-
-    - What's new in Compose Design Tools
-
-    - Have a sneak peek at some of the toolings we are working on to help you develop your Jetpack Compose applications.
-
-- https://www.youtube.com/watch?v=U5BwfqBpiWU [Jun 10, 2020]
-
-    - Jetpack Compose
-
-    - We outline our roadmap, what is ready for use right now, share our direction in areas that are still evolving, and show how the tight integration with tooling makes the development experience even better.
-
-- https://www.youtube.com/watch?v=oEy6nJaMtLM
-
-    - #AskAndroid at Android Dev Summit 2019 - Jetpack Compose
-
-    - Discussion of Jetpack Compose questions submitted by Android developers online.
-
-- https://www.youtube.com/watch?v=SPsdRXcgqjI
-
-    - Building Jetpack Compose
-
-    - Come behind the scenes with the Jetpack Compose team to hear about the motivations for the project and how Compose simplifies and accelerates UI development on Android.
-
-- https://www.youtube.com/watch?v=Q9MtlmmN4Q0 [Oct 24, 2019]
-
-    - Understanding Compose (Android Dev Summit '19)
-
-    - This session covers the benefits of a declarative reactive UI system like Jetpack Compose and how it applies to real problems that Android developers have today.
-
-- https://www.youtube.com/watch?v=dtm2h-_sNDQ
-
-    - What's New in Jetpack Compose (Android Dev Summit '19)
-
-    - This talk introduces Compose to new audiences, including what the project is and how it is taking shape. The talk also updates people who already know about Jetpack Compose, including how the project has evolved.
-
-- https://www.youtube.com/watch?v=4EFjDSijAZU [Jul 31, 2019]
-
-    - Chain React 2019 - Leland Richardson - React, Meet Compose
-
-    - Jetpack Compose is a new declarative UI framework that is being developed in the open for Android. It has a very similar programming model to React, and this talk will dive deep into the internals of both to explain the similarities and differences in the architectures of both, and how React Native might be able to leverage some of this technology long term
-
-
-- https://www.youtube.com/watch?v=VsStyq4Lzxo [May 8, 2019]
-
-    - Declarative UI Patterns (Google I/O'19)
-
-    - Explore how reactive and declarative paradigms can be applied to Android UI development, making it easier for developers to integrate these patterns into their Android apps with Kotlin.
-
-### DroidCon
-
-- https://www.droidcon.com/media-detail?video=353079951
-
-    - Jetpack Compose — Next Gen Kotlin UI Toolkit for Android ​
-
-### Android Makers
-
-- https://www.youtube.com/watch?v=qoE34lpyo_Q
-
-    - Let's build Android UI with Jetpack Compose by Alex Zhukovich, Takeaway.com EN
-
-
-### JetBrains TV
-
-- https://www.youtube.com/watch?v=I5zRmCheVVg
-
-    - Jetpack Compose - Next Gen Kotlin UI Toolkit for Android - Bengaluru, June 22, 2019
-
-### DutchAUG
-
-- https://www.youtube.com/watch?v=Z7Qs9XYGyCM
-
-    - All about Jetpack Compose
-
-### Google Developers
-
-- https://www.youtube.com/watch?v=JcZqtBy9MT8
-
-    - Google I/O'19 - Chet Haase Interview on Jetpack Compose
-
-### Wajahat Karim
-
-- https://www.youtube.com/watch?v=iJYCL1BlTkM
-
-    - Codelab - Art of Jetpack Compose - Wajahat Karim - 360|AnDev 2020
-
-### Raywenderlich 
-
-- https://www.youtube.com/watch?v=3VMMOFoSOZg
-
-    - Romain Guy - Android Q, UX and Jetpack Compose - Ray Wenderlich Podcast - S9, E9
-
-### AlexZh Dev
-
-- https://www.youtube.com/watch?v=vKaqd4gXsIk
-
-    - Let’s build an Android UI with Jetpack Compose (Mobile Twente & JUG Lodz meetups)
-
-## Video Tutorials, Courses, and Playlists
-
-### hitherejoe_dev
-
-- https://www.youtube.com/watch?v=JQW1Ykzhfes&list=PLygXnm_B3n4wUW_rIdk62mpSd68XPvBG8
-
-    - Morning Minimise - Live Streams: Jetpack Compose Playlist on YouTube by hitherejoe_dev
-
-### MindOrks
-
-- https://www.youtube.com/watch?v=JdTtRkT03gY
-
-    - Android Jetpack Compose Tutorial - A modern toolkit for building native Android UI
-
-## Podcasts
-
-- http://androidbackstage.blogspot.com/2020/08/episode-147-jetpack-compose-alpha.html
-
-    - Episode 147: Jetpack Compose Alpha by Android Developers Backstage
-
-- https://www.raywenderlich.com/13267837-jetpack-compose-with-denis-buketa-podcast-s10-e13
-
-    - Jetpack Compose with Denis Buketa – Podcast S10 E13
-
-- https://www.raywenderlich.com/4809247-romain-guy-podcast-s09-e09
-
-    - Romain Guy – Podcast S09 E09
-
-## Books
-
-- https://joebirch.co/exploring-jetpack-compose/ [NOT PUBLISHED YET]
-
-    - EXPLORING JETPACK COMPOSE
-
-    - I’m currently writing a book, “Exploring Jetpack Compose”, where I’ll be diving into the different components that are available within the Compose APIs.
-
-## Open-Source Projects
-
-### Apps
-
-### Libraries
-
-- https://github.com/chrisbanes/accompanist
-
-    - A collection of extension libraries for Jetpack Compose
-
-### Resources
-
-- https://github.com/vinaygaba/Learn-Jetpack-Compose-By-Example
-
-    - 🚀 This project contains various examples that show how you would do things the "Jetpack Compose" way.
-
-- https://github.com/hitherejoe/ComposeAcademy-Playground
-
-    - Compose Academy Playground is a free resource that provides snippets and practical samples on how to use Jetpack Compose for the Android platform.
-
-- https://github.com/Foso/Jetpack-Compose-Playground
-
-    - Collection of Jetpack Compose example code and tutorials 
-
-- https://github.com/Naveentp/Awesome-Jetpack-Compose
-
-    - A collaborative list of awesome jetpack compose resources.
-
-
-## Articles and Tutorials
-
-- https://jetc.dev/
-
-    - Jetpack Compose Resources + Newsletter.
-
-- https://medium.com/androiddevelopers/understanding-jetpack-compose-part-1-of-2-ca316fe39050
-
-    - Understanding Jetpack Compose — Part 1 of 2 by Leland Richardson
-
-- https://joebirch.co/tag/jetpack-compose/
-
-    - Collection of quality articles on Jetpack Compose by Joe Birch.
-
-- https://foso.github.io/Jetpack-Compose-Playground/
-
-    - This is a collection of Jetpack Compose examples/tutorials and demos.
-
-- https://medium.com/tag/jetpack-compose/latest
-
-    - Collection of quality articles from Android Devs and the Android team that worked on Jetpack Compose. Sort Jetpack Compose articles by Recency on Medium. 
-
-- https://dev.to/t/jetpackcompose
-
-    - Collection of quality articles from Android Devs. Sort Jetpack Compose articles by Recency on Dev.to
-
-- https://compose.academy/
-
-    - Snippets and guides for Jetpack Compose on the Android platform
-
-- https://jetpackcompose.app/
-
-    - Learn more about using Jetpack Compose in Android. How does Jetpack Compose compare to the existing Android UI Toolkit?
-
-- https://alexzh.com/tag/jetpack-compose/
-
-    - Quality Jetpack Compose articles by AlexZh
-
-- https://www.raywenderlich.com/7032631-jetpack-compose-tutorial-for-android-getting-started
-
-    - In this Jetpack Compose tutorial, you’ll learn to use the new declarative UI framework being developed by the Android team by creating a cookbook app.
-
-
-## Twitter Threads
-
-- https://twitter.com/objcode/status/1298740410584457216
-
-    - by [Sean McQuillan](https://twitter.com/objcode)
-
-    - On #JetpackCompose Alpha day, I want to share a story about Architecture in Compose. When we open sourced Compose at I/O 2019, one of the most common questions from many Android developers was “What does this mean for the architecture of our apps?”
-
-- https://twitter.com/intelligibabble/status/1299020334826283009
-
-    - by [Leland Richardson](https://twitter.com/intelligibabble)
-
-    - Seeing a lot of confusion around Compose and SwiftUI. A few clarifying facts.
-
-
-## Discussions
-
-- https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/
-
-## Communities
-
-- https://stackoverflow.com/questions/tagged/android-jetpack-compose
-
-- https://surveys.jetbrains.com/s3/kotlin-slack-sign-up
-
-## FAQ for Jetpack Compose
-
-- https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/
-
-- https://jetpackcompose.app/faq
-
-- https://github.com/Mishkun/jetpack-compose-faq
-
-- Checkout #Twitter-Threads
-
-- https://stackoverflow.com/questions/58558163/how-does-jetpack-compose-work-under-the-hood
-
-- Do you have a navigation solution in your minds for Compose? Do we have to use fragments for NavComponent? | Asked by https://www.reddit.com/user/dtunctuncer/
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g28qg5p)
-
-- Will the lifecycle of Compose continue be like fragments(hell)or it will be simplified? We had several issues with fragments on our team but I have never heard any lifecycle issue from our iOS team with ViewControllers for years | Asked by https://www.reddit.com/user/charbgr/
-
-    - [Answer(https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g29379k)
-
-
-- From someone who hasn't started using Compose, but plans on doing so until the end of the year: What are the worst use cases for the transition? As someone who relies on custom widgets, does Compose allow for the same level of customization (measure/layout, draw, touch, animation, accessibility, states)? | Asked by https://www.reddit.com/user/jpmcosta/
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g29paiu)
-    
-
-- Does jetpack compose perform better than XML? when editing complex layouts on XML my low spec laptop struggles a lot. | Asked by https://www.reddit.com/user/Superblazer/
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g2anoyc)
-
-
-- How binary compatibility would be handled? If new kotlin version comes out and kotlin compiler changes extension plugin API or if Compose starts to generate different bytecode, would Compose-based libraries my app uses work OK if each of them depends on different compiler version? | Asked by https://www.reddit.com/user/dimsuz/
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g29k7f0)
-
-
-- https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g2ylseu | Asked by https://www.reddit.com/user/CraZy_LegenD/
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g2ylseu)
-
-
-- Given the supposedly equal treatment for all Android languages, what is the Compose story for Java and C++ developers? | Asked by https://www.reddit.com/user/pjmlp/
-
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g2kugzx)
-
-
-- Will you port ConstraintLayout/MotionLayout in Compose? | Asked by https://www.reddit.com/user/charbgr/
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g297x0u)
-
-
-- Is Jetpack Compose going to replace few existing components completely? Or they will coexist together like Fragments, Recyclerview etc | Asked by https://www.reddit.com/user/chavanshashank/
-
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g28siic)
-
-
-- How do I wrap my head around the concept of Ambients? | Asked by https://www.reddit.com/user/s_a_u_r_a_b_h/
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g2aj8ug)
-
-
-- What are the best ways to manage a state for Jetpack compose? And should that state only be for that only composable function or whole visible screen?
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g28u2fy)
-
-
-- With jetpack compose around the corner, is it possible to ditch fragments completely and have one activity that manages multiple composables without the need of fragments or other activities. | Asked by https://www.reddit.com/user/CraZy_LegenD/
-
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g29fp2x)
-
-- What should be the directory structure for Jetpack compose functions? Specifically for MVVM approach? | Asked by https://www.reddit.com/user/chavanshashank/
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g28vs4t)
-
-
-- Are there plans to move other libraries (ViewPager, SwipeRefreshLayout, etc.) to Compose when it's released? | Asked by https://www.reddit.com/user/Namnodorel/
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g28vyap)
-
-
-- With compose I see a bright future without fragments (I know they are being fixed, but still), without activity recreation on config change (so no Android viewmodels either) and much more. I think this will allow having code that is simpler and more platform agnostic and that ditches most lifecycle gotchas. This also plays well with kotlin and compose multi platform... My question is, will you support this approach straight away, or will you support the fragment+viewmodel way only, and the other approach will be on the hands of the community? | Asked by https://www.reddit.com/user/lotdrops/
-
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g2b3lu5)
-
-
-- Can Jetpack compose interoperate with libraries like MPAndroidChart (with no changes to the library)? ex: using chart from the lib in Jetpack Compose | Asked by https://www.reddit.com/user/nerdy_adventurer/
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g2a74ej)
-
-
-- These days many apps have settled on Activity/Fragment as View, ViewModel, and Repository. With Compose, are ViewModels still relevant for state management? | Asked by https://www.reddit.com/user/sonorangoose/
-
-    - [Answer](https://www.reddit.com/r/androiddev/comments/idefss/were_on_the_engineering_team_for_android_jetpack/g2azmy2) 
-
-
-## :memo: Contributing
-
-See [contributing.md](contributing.md)
-
-## :computer: Find us on
-
-<div align="center">
-	<a href="https://github.com/androiddevnotes"> GitHub </a> / <a href="https://www.instagram.com/androiddevnotes"> Instagram </a> / <a href="https://twitter.com/androiddevnotes"> Twitter </a>
-	<br><br>
-    <img width="320px" src="assets/androiddevnotes.png" alt="androiddevnotes logo"></img>
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/GVlSP7v.png">
 </div>
+
+<br><br>
+
+<!-- SECTION HEADINGS -->
+<h3 id="android-stack">Producing Animation</h3>
+<br>
+
+<p><strong>Some other ways to produce the animation effect were:</strong></p>
+
+<p><strong>Using gifs:</strong> Gifs are rendered at a fixed size that can't be scaled up to match large and high-density screens. They were not an ideal replacement.</p>
+
+
+<p><strong>Using image sequences:</strong> One of the ways to achieve animation effect is to divide the animation into multiple pictures, and then periodically replace the pictures drawn on the screen to form the animation. This method is very simple, but the shortcomings are obvious. Very memory consuming, so it wasn't recommended.</p>
+
+
+<p><strong>Facebook Keyframes:</strong> They are now deprecated and had limited feature set. So, not a very ideal choice either.</p>
+
+<p>The direct consequence of the above is that there was not a hint of dynamic vector animation in almost all the major apps, but until the emergence of Lottie.</p>
+
+
+
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/AIm0SpV.png">
+</div>
+
+<br><br>
+
+<!-- SECTION HEADINGS -->
+<h3 id="linux-kernel">Emergence of Lottie</h3>
+<br>
+<p>Lottie is an animation rendering library open-sourced by Airbnb. With Android, it also supports iOS, React Native, Windows, and Web platforms.</p>
+
+<p>Lottie currently supports rendering and playing After Effects animations. <strong>Lottie uses the JSON data exported by bodymovin, an After Effects plug-in as the animation data source.</strong></p>
+
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/oQJRNJ6.png">
+</div>
+
+<br><br>
+
+<!-- SECTION HEADINGS -->
+<h3 id="secure-element">After Effects and Bodymovin</h3>
+<br>
+<p>bodymovin plug-in is an open-source library used to present various AE effects on the web. </p>
+
+<p><strong>The high-level workflow from after effects to rendering on device is shown:</strong></p>
+
+
+<p>Designers use After Effects to make animations and export JSON files. We can put the JSON file on the svg-sprite Lottie-Player and run it to see the effect.</p>
+
+<p>The resources used by Lottie need to first <strong>convert the aep (After Effects Project) file generated by Adobe After Effects into a general JSON format file through bodymovin</strong></p>
+
+
+<p>bodymovin exports the After Effects animation as a description of the animation, and the job of lottie-android is to translate the described animation with native code, and its core principle is canvas drawing.</p>
+
+
+<p><strong>Lottie's animation is drawn by a pure canvas.</strong></p>
+
+
+<p>The bodymovin export contains all the information of the animation, the keyframe information of the animation, how to do the animation, and what to do.</p>
+
+
+<p><strong>All the data of the Model in Lottie comes from this bodymovin exported json (the corresponding Model is LottieComposition).</strong></p>
+
+
+<br><br>
+
+<!-- SECTION HEADINGS -->
+<h3 id="hardware-abstraction-layer">Bodymovin JSON attributes</h3>
+<br>
+<p><strong>There are many attributes. Few are listed:</strong></p>
+
+
+<h4>The outermost layer looks like this:</h4>
+
+<p>The meaning of the attribute:</p>
+
+
+<p><strong>v =</strong> version of bodymovin</p>
+
+
+<p><strong>fr =</strong> Frame rate</p>
+
+
+<p><strong>ip =</strong> Start keyframe</p>
+
+
+<p><strong>op =</strong> End key frame</p>
+
+
+<p><strong>w =</strong> Animation width</p>
+
+
+<p><strong>h =</strong> Animation height</p>
+
+
+<p><strong>assets =</strong> Animated picture resource information</p>
+
+
+<p><strong>layers =</strong> Animation layer information</p>
+
+
+<p>From here, you can get the width and height of the designed animation, frame-related information, information on the image resources needed by the animation, and layer information.</p>
+
+
+<h4>Inside assets</h4>
+
+<p>a) assets</p>
+
+<p>Image resource information.</p>
+
+<p><strong>related classes:</strong> LottieImageAsset, ImageAssetBitmapManager.</p>
+
+<p>The meaning of the attribute:</p>
+
+
+<p><strong>id =</strong> Picture id</p>
+<p><strong>w =</strong> Picture width</p>
+<p><strong>h =</strong> Picture height</p>
+<p><strong>p =</strong> Picture name</p>
+
+<h4>Inside layers</h4>
+
+<p>b) layers</p>
+
+<p>Layer information.</p>
+
+<p><strong>related classes:</strong> BaseLayer.</p>
+
+<p>The meaning of the attribute:</p>
+
+
+<p><strong>nm =</strong> Layer name</p>
+<p><strong>refId =</strong> Resource id</p>
+<p><strong>ind =</strong> Layer id</p>
+<p><strong>ip =</strong> The starting keyframe of the layer</p>
+<p><strong>op =</strong> The ending keyframe of the layer</p>
+<p><strong>st =</strong> StartFrame</p>
+
+
+<p>Lottie is responsible for analyzing the animation data coming through JSON, calculating the state of each animation at a certain point in time, and accurately drawing it on the screen.</p>
+
+
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/Ue5QW08.png">
+</div>
+
+<br><br>
+
+<!-- SECTION HEADINGS -->
+<h3 id="native-libraries">Layers</h3>
+<br>
+<p>To understand Lottie animation rendering, we must first understand an important concept in <strong>After Effects: Layer</strong></p>
+
+<p>In After Effects, the concept of layers is similar to the concept of layers in Photoshop: layers are equivalent to a more fine-grained distinction for the overall image of the animation, and different types of elements are split with different shapes and solid colors.</p>
+
+<p>Elements such as text, etc. are located in different layers, and all layers are superimposed in sequence to form the rendered image.</p>
+
+<p>Modifying the properties of a layer will not affect other layers so that when performing animation, it is possible to perform different animation logic on each element in the image more clearly.</p>
+
+<p><i>In Lottie, the concept of layers is abstracted into 6 classes in BaseLayer:</i></p>
+
+<p><strong>1. ShapeLayer</strong></p>
+
+<p><strong>2. CompositionLayer</strong></p>
+
+<p><strong>3. SolidLayer</strong></p>
+
+<p><strong>4. ImageLayer</strong></p>
+
+<p><strong>5. NullLayer</strong></p>
+
+<p><strong>6. TextLayer</strong></p>
+
+
+<p>The corresponding relationship between them and the layers in After Effects is: </p>
+
+<p><i>Note the naming might be slightly different.</i></p>
+
+<p><strong>ShapeLayer: Shape layer</strong></p>
+<p><strong>CompositionLayer: Precompose layer</strong></p>
+<p><strong>SolidLayer: Solid-color Layer</strong></p>
+<p><strong>ImageLayer: Image material layer</strong></p>
+<p><strong>NullLayer: Empty layer</strong></p>
+<p><strong>TextLayer: Text layer</strong></p>
+
+
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/zFh2TFt.png">
+</div>
+
+<br><br>
+
+<!-- SECTION HEADINGS -->
+<h3 id="runtime">Core Classes of Lottie</h3>
+<br>
+<p>The following is a description of the three core classes in Lottie-Android:</p>
+
+<p><strong>a) LottieComposition (which converts JSON to data object)</strong></p>
+
+<p><strong>b) LottieDrawable (which converts data Object to Drawable)</strong></p>
+
+<p><strong>c) LottieAnimationView (performs drawing)</strong></p>
+
+<p>The data in the Json file is converted into a LottieComposition data object. This class provides a static method for parsing json. </p>
+<p>LottieDrawable is responsible for drawing the data into a drawable. LottieDrawable inherits from Drawable.</p>
+<p>TLottieAnimationView inherits from AppCompatImageView. LottieAnimationView is responsible for displaying the LottieDrawable.</p>
+
+
+
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/4m1AHor.png">
+</div>
+
+<br><br>
+
+<!-- SECTION HEADINGS -->
+<h3 id="framework">Screen Adaptation of Lottie Animations</h3>
+<br>
+<p><strong>Lottie has already done the adaptation work on the Android platform.</strong></p>
+<p>When parsing, the width and height will be multiplied by the density of the phone after reading the width and height. When using it, it decides whether the adapted width and height exceed the width and height of the screen and if it exceeds, then zooms. This guarantees Lottie's proper display effect on the Android platform. </p>
+<p><strong>Lottie converts all px values to dp.</strong> </p>
+
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/1f9bIX9.png">
+</div>
+
+<br><br>
+
+
+<!-- SECTION HEADINGS -->
+<h3 id="apps">Overview</h3>
+<br>
+<p>With Lottie, as long as designers use After Effects to design animations, export them with bodymovin, import them into assets, and write the following code to achieve it or simply add in XML then there is no need to write custom View nor to draw a Path and nor to calculate the points!</p>
+
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/ZFBAdHs.png">
+</div>
+
+
+<br><br>
+
+<!-- SECTION HEADINGS -->
+<h3 id="references">References</h3>
+<br>
+<a href="https://developer.android.com/guide/platform" target="_blank" rel="nofollow">https://developer.android.com/guide/platform</a><br><br>
+<a href="https://source.android.com/" target="_blank" rel="nofollow">https://source.android.com/</a><br><br>
+<a href="https://en.wikipedia.org/wiki/Android_(operating_system)" target="_blank" rel="nofollow">https://en.wikipedia.org/wiki/Android_(operating_system)</a><br><br>
+<a href="https://software.intel.com/content/www/us/en/develop/blogs/art-vs-dalvik-introducing-the-new-android-x86-runtime.html" target="_blank" rel="nofollow">https://software.intel.com/content/www/us/en/develop/blogs/art-vs-dalvik-introducing-the-new-android-x86-runtime.html</a><br><br>
+<a href="http://newandroidbook.com/" target="_blank" rel="nofollow">http://newandroidbook.com/</a><br><br>
+<a href="https://www.amazon.ca/Android-Security-Internals-Depth-Architecture/dp/1593275811" target="_blank" rel="nofollow">Android Security Internals: An In-Depth Guide to Android's Security Architecture</a><br><br>
+<a href="https://www.amazon.ca/Embedded-Android-Porting-Extending-Customizing/dp/1449308295" target="_blank" rel="nofollow">Embedded Android: Porting, Extending, and Customizing </a><br><br>
+
+<p><strong>Relevant Video on "Awesome Dev Notes" YouTube</strong></p>
+
+<div class="embed-responsive embed-responsive-16by9">
+    <iframe id="player" class="embed-responsive-item" src="https://www.youtube.com/embed/E2_SgFnFmxc" allowfullscreen allow=autoplay></iframe>
+</div>
+
+<br><br>
+
+
+<!-- SECTION HEADINGS -->
+<h3 id="contributions">Contributions</h3>
+<br>
+<p><strong><i>Contributions and Pull requests are welcomed at <a href="https://github.com/androiddevnotes" target="_blank" rel="nofollow">https://github.com/androiddevnotes</a> repositories!</i></strong></p>
+
+<p>🐣</p>
