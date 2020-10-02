@@ -178,21 +178,21 @@ The cache based on weak references always exists and cannot be disabled by the u
 
 **Glide 5 disk cache strategy**
 
-**DiskCacheStrategy.DATA -->** Only cache the original picture
+**DiskCacheStrategy.DATA:** Only cache the original picture
 
-**DiskCacheStrategy.RESOURCE -->** Only cache the converted pictures
+**DiskCacheStrategy.RESOURCE:** Only cache the converted pictures
 
-**DiskCacheStrategy.ALL -->** cache both the original picture and the converted picture. For remote pictures, cache DATA and RESOURCE. For local pictures, only cache RESOURCE
+**DiskCacheStrategy.ALL:** cache both the original picture and the converted picture. For remote pictures, cache DATA and RESOURCE. For local pictures, only cache RESOURCE
 
-**DiskCacheStrategy.AUTOMATIC -->** Default strategy, try to use the best strategy for local and remote pictures. When downloading network pictures, use DATA. For local pictures, use RESOURCE
+**DiskCacheStrategy.AUTOMATIC:** Default strategy, try to use the best strategy for local and remote pictures. When downloading network pictures, use DATA. For local pictures, use RESOURCE
 
-**DiskCacheStrategy.NONE -->** Do not cache any content
+**DiskCacheStrategy.NONE:** Do not cache any content
 
 **Glide cache is divided into weak reference + LruCache + DiskLruCache**
 
 **The order of reading data is weak reference > LruCache > DiskLruCache > network.**
 
-**The order of writing cache is network –> DiskLruCache–> LruCache–> weak reference**
+**The order of writing cache is network > DiskLruCach > LruCache > weak reference**
 
 Disk caching is implemented through DiskLruCache, and different types of cached pictures can be obtained according to different caching strategies. 
 
