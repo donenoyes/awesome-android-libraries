@@ -9,15 +9,8 @@
 7. [Memory Cache Write](#memory-cache-write)
 8. [Memory Cache Overview](#memory-cache-overview)
 9. [Disk Cache](#disk-cache)
-10. [ModelLoader](#modelloader)
-11. [DataFetcher](#datafetcher)
-12. [Encoder](#encoder)
-13. [ResourceDecoder](#resourcedecoder)
-14. [Engine](#engine)
-15. [EngineJob](#enginejob)
-16. [DecodeJob](#decodejob)
-17. [References](#references)
-18. [Contributions](#contributions)
+10. [References](#references)
+11. [Contributions](#contributions)
 
 **The internals of the Glide Caching Mechanism** blog post focuses on the source code behind the Glide Cache. This blog acts as an overview of the components involved.
 
