@@ -1,300 +1,314 @@
-<p><strong>Table of Contents</strong></p>
-<ol>
-  <li><a href="#early-days-of-android">Early days of Dynamic Animation</a></li>
-  <li><a href="#android-stack">Producing Animation</a></li>
-  <li><a href="#linux-kernel">Emergence of Lottie</a></li>
-  <li><a href="#secure-element">After Effects and Bodymovin</a></li>
-  <li><a href="#hardware-abstraction-layer">Bodymovin JSON attributes</a></li>
-  <li><a href="#native-libraries">Layers</a></li>
-  <li><a href="#runtime">Core Classes of Lottie</a></li>
-  <li><a href="#framework">Screen Adaptation of Lottie Animations</a></li>
-  <li><a href="#apps">Overview</a></li>
-  <li><a href="#references">References</a></li>
-  <li><a href="#contributions">Contributions</a></li>
-  
-</ol>
-<br>
-<p><strong>Understanding the internals of Lottie-Android and the workflow of Loading and Rendering the Animation file</strong> blog post aims to be the starting point for developers to get familiar with the core classes, methods of Lottie source code plus the understanding of After Effects plugin Bodymovin which exports JSON required by Lottie to work.</p>
-<br><br>
+**Table of Contents**
 
+1. [One line](#one-line)
+2. [Glide](#glide)
+3. [GlideBuilder](#glidebuilder)
+4. [RequestManagerRetriever](#requestmanagerretriever)
+5. [RequestManager](#requestmanager)
+6. [RequestBuilder](#requestbuilder)
+7. [Request](#request)
+8. [Target](#target)
+9. [GlideModule](#glidemodule)
+10. [ModelLoader](#modelloader)
+11. [DataFetcher](#datafetcher)
+12. [Encoder](#encoder)
+13. [ResourceDecoder](#resourcedecoder)
+14. [Engine](#engine)
+15. [EngineJob](#enginejob)
+16. [DecodeJob](#decodejob)
+17. [References](#references)
+18. [Contributions](#contributions)
 
-<!-- SECTION HEADINGS -->
-<h3 id="early-days-of-android">Early days of Dynamic Animation</h3>
-<br>
-<p>In the year 2014 with the release of Android 5.0 (API 21) Lollipop, <i><strong>Android supported Vector Drawables and Animated Vector Drawables.</strong></i></p>
+**The internals of the Glide Image Loading Library - Analyzing the Source Code** blog post focuses on the source code behind the one single line of Glide. This blog is in no way exhaustive. Glide library though simple is HUGE behind the scenes. We do not cover the caching mechanism here, coming soon.
 
-<p>But even with the support for Animated Vector Drawables, <strong>making dynamic vector animation was not easy.</strong> It couldn't be loaded programmatically or over the internet.</p>
+### One line
 
-<p>Moreover, it had issues with resolving vector path transformation animation in Android 4.x</p>
+Generally speaking, we use the following code to load an image:
 
-<div class="row  justify-content-center">
-  <img class="img-fluid text-center" src = "https://i.imgur.com/GVlSP7v.png">
-</div>
+**Glide.with(this).load(url).into(imageView);**
 
-<br><br>
+We will explore the source code behind this line.
 
-<!-- SECTION HEADINGS -->
-<h3 id="android-stack">Producing Animation</h3>
-<br>
-
-<p><strong>Some other ways to produce the animation effect were:</strong></p>
-
-<p><strong>Using gifs:</strong> Gifs are rendered at a fixed size that can't be scaled up to match large and high-density screens. They were not an ideal replacement.</p>
-
-
-<p><strong>Using image sequences:</strong> One of the ways to achieve animation effect is to divide the animation into multiple pictures, and then periodically replace the pictures drawn on the screen to form the animation. This method is very simple, but the shortcomings are obvious. Very memory consuming, so it wasn't recommended.</p>
-
-
-<p><strong>Facebook Keyframes:</strong> They are now deprecated and had limited feature set. So, not a very ideal choice either.</p>
-
-<p>The direct consequence of the above is that there was not a hint of dynamic vector animation in almost all the major apps, but until the emergence of Lottie.</p>
-
-
-
-<div class="row  justify-content-center">
-  <img class="img-fluid text-center" src = "https://i.imgur.com/AIm0SpV.png">
-</div>
+![](https://i.imgur.com/boFWs3F.png)
 
 <br><br>
 
-<!-- SECTION HEADINGS -->
-<h3 id="linux-kernel">Emergence of Lottie</h3>
-<br>
-<p>Lottie is an animation rendering library open-sourced by Airbnb. With Android, it also supports iOS, React Native, Windows, and Web platforms.</p>
+### Glide
 
-<p>Lottie currently supports rendering and playing After Effects animations. <strong>Lottie uses the JSON data exported by bodymovin, an After Effects plug-in as the animation data source.</strong></p>
+**Exploring the Source Code:**
 
-<div class="row  justify-content-center">
-  <img class="img-fluid text-center" src = "https://i.imgur.com/oQJRNJ6.png">
-</div>
+Let us take a look at the modules in Glide.
+
+![](https://i.imgur.com/r2q9OEV.png)
 
 <br><br>
 
-<!-- SECTION HEADINGS -->
-<h3 id="secure-element">After Effects and Bodymovin</h3>
-<br>
-<p>bodymovin plug-in is an open-source library used to present various AE effects on the web. </p>
+Understanding the main outermost classes. First, we have Glide.
 
-<p><strong>The high-level workflow from after effects to rendering on device is shown:</strong></p>
+Glide is a singleton class, and the instance can be obtained through the **Glide#get(Context)** method.
 
-
-<p>Designers use After Effects to make animations and export JSON files. We can put the JSON file on the svg-sprite Lottie-Player and run it to see the effect.</p>
-
-<p>The resources used by Lottie need to first <strong>convert the aep (After Effects Project) file generated by Adobe After Effects into a general JSON format file through bodymovin</strong></p>
-
-
-<p>bodymovin exports the After Effects animation as a description of the animation, and the job of lottie-android is to translate the described animation with native code, and its core principle is canvas drawing.</p>
-
-
-<p><strong>Lottie's animation is drawn by a pure canvas.</strong></p>
-
-
-<p>The bodymovin export contains all the information of the animation, the keyframe information of the animation, how to do the animation, and what to do.</p>
-
-
-<p><strong>All the data of the Model in Lottie comes from this bodymovin exported json (the corresponding Model is LottieComposition).</strong></p>
-
+![](https://i.imgur.com/JV1gDLY.png)
 
 <br><br>
 
-<!-- SECTION HEADINGS -->
-<h3 id="hardware-abstraction-layer">Bodymovin JSON attributes</h3>
-<br>
-<p><strong>There are many attributes. Few are listed:</strong></p>
+**The Glide class is a global configuration class.** Encoder, Decoder, ModelLoader ... are all set here. It also provides an interface for creating RequestManager (Glide#with() method). We take a look at the RequestManager later.
 
+When using Glide, the **Glide#with()** method is called first to create a RequestManager. The with() method in Glide has five overloads:
 
-<h4>The outermost layer looks like this:</h4>
+**The Glide#with() method delegates the creation of RequestManager to RequestManagerRetriever. RequestManagerRetriever is a singleton class and calls get(Context) to create RequestManager.**
 
-<p>The meaning of the attribute:</p>
-
-
-<p><strong>v =</strong> version of bodymovin</p>
-
-
-<p><strong>fr =</strong> Frame rate</p>
-
-
-<p><strong>ip =</strong> Start keyframe</p>
-
-
-<p><strong>op =</strong> End key frame</p>
-
-
-<p><strong>w =</strong> Animation width</p>
-
-
-<p><strong>h =</strong> Animation height</p>
-
-
-<p><strong>assets =</strong> Animated picture resource information</p>
-
-
-<p><strong>layers =</strong> Animation layer information</p>
-
-
-<p>From here, you can get the width and height of the designed animation, frame-related information, information on the image resources needed by the animation, and layer information.</p>
-
-
-<h4>Inside assets</h4>
-
-<p>a) assets</p>
-
-<p>Image resource information.</p>
-
-<p><strong>related classes:</strong> LottieImageAsset, ImageAssetBitmapManager.</p>
-
-<p>The meaning of the attribute:</p>
-
-
-<p><strong>id =</strong> Picture id</p>
-<p><strong>w =</strong> Picture width</p>
-<p><strong>h =</strong> Picture height</p>
-<p><strong>p =</strong> Picture name</p>
-
-<h4>Inside layers</h4>
-
-<p>b) layers</p>
-
-<p>Layer information.</p>
-
-<p><strong>related classes:</strong> BaseLayer.</p>
-
-<p>The meaning of the attribute:</p>
-
-
-<p><strong>nm =</strong> Layer name</p>
-<p><strong>refId =</strong> Resource id</p>
-<p><strong>ind =</strong> Layer id</p>
-<p><strong>ip =</strong> The starting keyframe of the layer</p>
-<p><strong>op =</strong> The ending keyframe of the layer</p>
-<p><strong>st =</strong> StartFrame</p>
-
-
-<p>Lottie is responsible for analyzing the animation data coming through JSON, calculating the state of each animation at a certain point in time, and accurately drawing it on the screen.</p>
-
-
-<div class="row  justify-content-center">
-  <img class="img-fluid text-center" src = "https://i.imgur.com/Ue5QW08.png">
-</div>
+![](https://i.imgur.com/TredNey.png)
 
 <br><br>
 
-<!-- SECTION HEADINGS -->
-<h3 id="native-libraries">Layers</h3>
-<br>
-<p>To understand Lottie animation rendering, we must first understand an important concept in <strong>After Effects: Layer</strong></p>
+### GlideBuilder
 
-<p>In After Effects, the concept of layers is similar to the concept of layers in Photoshop: layers are equivalent to a more fine-grained distinction for the overall image of the animation, and different types of elements are split with different shapes and solid colors.</p>
+GlideBuilder is a class used to create Glide instances, which contains many getters and setter methods, such as setting BitmapPool, MemoryCache, ArrayPool, DiskCache, MemorySizeCalculator, and a few more.
 
-<p>Elements such as text, etc. are located in different layers, and all layers are superimposed in sequence to form the rendered image.</p>
-
-<p>Modifying the properties of a layer will not affect other layers so that when performing animation, it is possible to perform different animation logic on each element in the image more clearly.</p>
-
-<p><i>In Lottie, the concept of layers is abstracted into 6 classes in BaseLayer:</i></p>
-
-<p><strong>1. ShapeLayer</strong></p>
-
-<p><strong>2. CompositionLayer</strong></p>
-
-<p><strong>3. SolidLayer</strong></p>
-
-<p><strong>4. ImageLayer</strong></p>
-
-<p><strong>5. NullLayer</strong></p>
-
-<p><strong>6. TextLayer</strong></p>
-
-
-<p>The corresponding relationship between them and the layers in After Effects is: </p>
-
-<p><i>Note the naming might be slightly different.</i></p>
-
-<p><strong>ShapeLayer: Shape layer</strong></p>
-<p><strong>CompositionLayer: Precompose layer</strong></p>
-<p><strong>SolidLayer: Solid-color Layer</strong></p>
-<p><strong>ImageLayer: Image material layer</strong></p>
-<p><strong>NullLayer: Empty layer</strong></p>
-<p><strong>TextLayer: Text layer</strong></p>
-
-
-<div class="row  justify-content-center">
-  <img class="img-fluid text-center" src = "https://i.imgur.com/zFh2TFt.png">
-</div>
+![](https://i.imgur.com/JSqqt1R.png)
 
 <br><br>
 
-<!-- SECTION HEADINGS -->
-<h3 id="runtime">Core Classes of Lottie</h3>
-<br>
-<p>The following is a description of the three core classes in Lottie-Android:</p>
+These array pools, cache implementations, etc. will eventually be used as **parameters of the Glide constructor to create Glide instances.**
 
-<p><strong>a) LottieComposition (which converts JSON to data object)</strong></p>
-
-<p><strong>b) LottieDrawable (which converts data Object to Drawable)</strong></p>
-
-<p><strong>c) LottieAnimationView (performs drawing)</strong></p>
-
-<p>The data in the Json file is converted into a LottieComposition data object. This class provides a static method for parsing json. </p>
-<p>LottieDrawable is responsible for drawing the data into a drawable. LottieDrawable inherits from Drawable.</p>
-<p>TLottieAnimationView inherits from AppCompatImageView. LottieAnimationView is responsible for displaying the LottieDrawable.</p>
-
-
-
-<div class="row  justify-content-center">
-  <img class="img-fluid text-center" src = "https://i.imgur.com/4m1AHor.png">
-</div>
+![](https://i.imgur.com/tSTSsUs.png)
 
 <br><br>
 
-<!-- SECTION HEADINGS -->
-<h3 id="framework">Screen Adaptation of Lottie Animations</h3>
-<br>
-<p><strong>Lottie has already done the adaptation work on the Android platform.</strong></p>
-<p>When parsing, the width and height will be multiplied by the density of the phone after reading the width and height. When using it, it decides whether the adapted width and height exceed the width and height of the screen and if it exceeds, then zooms. This guarantees Lottie's proper display effect on the Android platform. </p>
-<p><strong>Lottie converts all px values to dp.</strong> </p>
+### RequestManagerRetriever
 
-<div class="row  justify-content-center">
-  <img class="img-fluid text-center" src = "https://i.imgur.com/1f9bIX9.png">
-</div>
+[https://www.adobe.com/in/products/aftereffects.html](https://www.adobe.com/in/products/aftereffects.html)  
+
+**Understanding the RequestManagerRetriever**
+
+![](https://i.imgur.com/GJ1AHGL.png)
 
 <br><br>
 
+The 5 overloaded Glide#with() methods mentioned earlier correspond to the 5 overloaded get() methods in RequestManagerRetriever.
 
-<!-- SECTION HEADINGS -->
-<h3 id="apps">Overview</h3>
-<br>
-<p>With Lottie, as long as designers use After Effects to design animations, export them with bodymovin, import them into assets, and write the following code to achieve it or simply add in XML then there is no need to write custom View nor to draw a Path and nor to calculate the points!</p>
+**The logic for creating RequestManager is as follows:**
 
-<div class="row  justify-content-center">
-  <img class="img-fluid text-center" src = "https://i.imgur.com/ZFBAdHs.png">
-</div>
+If the parameter of the with method is Activity or Fragment, call the **fragmentGet(Context, android.app.FragmentManager)** method in RequestManagerRetriever to create the RequestManager.
 
+![](https://i.imgur.com/N2a8z3x.png)
 
 <br><br>
 
-<!-- SECTION HEADINGS -->
-<h3 id="references">References</h3>
-<br>
-<a href="https://developer.android.com/guide/platform" target="_blank" rel="nofollow">https://developer.android.com/guide/platform</a><br><br>
-<a href="https://source.android.com/" target="_blank" rel="nofollow">https://source.android.com/</a><br><br>
-<a href="https://en.wikipedia.org/wiki/Android_(operating_system)" target="_blank" rel="nofollow">https://en.wikipedia.org/wiki/Android_(operating_system)</a><br><br>
-<a href="https://software.intel.com/content/www/us/en/develop/blogs/art-vs-dalvik-introducing-the-new-android-x86-runtime.html" target="_blank" rel="nofollow">https://software.intel.com/content/www/us/en/develop/blogs/art-vs-dalvik-introducing-the-new-android-x86-runtime.html</a><br><br>
-<a href="http://newandroidbook.com/" target="_blank" rel="nofollow">http://newandroidbook.com/</a><br><br>
-<a href="https://www.amazon.ca/Android-Security-Internals-Depth-Architecture/dp/1593275811" target="_blank" rel="nofollow">Android Security Internals: An In-Depth Guide to Android's Security Architecture</a><br><br>
-<a href="https://www.amazon.ca/Embedded-Android-Porting-Extending-Customizing/dp/1449308295" target="_blank" rel="nofollow">Embedded Android: Porting, Extending, and Customizing </a><br><br>
+If the parameter of the with method is Fragment or FragmentActivity, call **supportFragmentGet(Context, FragmentManager)** method to create RequestManager.
 
-<p><strong>Relevant Video on "Awesome Dev Notes" YouTube</strong></p>
-
-<div class="embed-responsive embed-responsive-16by9">
-    <iframe id="player" class="embed-responsive-item" src="https://www.youtube.com/embed/E2_SgFnFmxc" allowfullscreen allow=autoplay></iframe>
-</div>
+![](https://i.imgur.com/9sRhUQJ.png)
 
 <br><br>
 
+TIf the parameter of the with method is Context, it will determine whether the source belongs to FragmentActivity and Activity. If it is, it will be evaluated according to the above logic, otherwise, the **getApplicationManager(Context)** method will be called to create the RequestManager.
 
-<!-- SECTION HEADINGS -->
-<h3 id="contributions">Contributions</h3>
-<br>
-<p><strong><i>Contributions and Pull requests are welcomed at <a href="https://github.com/androiddevnotes" target="_blank" rel="nofollow">https://github.com/androiddevnotes</a> repositories!</i></strong></p>
+![](https://i.imgur.com/Kn8l41M.png)
 
-<p>🐣</p>
+<br><br>
+
+**If the background thread calls Glide#with() or the system version is less than 17 i.e JELLY_BEAN_MR1,** the getApplicationManager(Context) method will eventually be called to create the RequestManager.
+
+![](https://i.imgur.com/rivXZ2V.png)
+
+<br><br>
+
+### RequestManager
+
+![](https://i.imgur.com/ctxazZx.png)
+
+<br><br>
+
+**We all know that when using Glide to load a picture if the current screen is destroyed or invisible, it will stop loading the image, but when we use Glide to load the image, we just pass a Context object, so how does Glide get the screen lifecycle through a context object?**
+
+Through the introduction of the RequestManagerRetriever, we know that a FragmentManager parameter is required when creating a RequestManager (except for the global RequestManager), now when creating a RequestManager, an invisible Fragment will be created first, and added to the current screen through FragmentManager, and this invisible Fragment can be used to detect the lifecycle of the screen.
+
+**The code ensures that each Activity/Fragment contains only one RequestManagerFragment and one RequestManager**.
+
+![](https://i.imgur.com/ctxazZx.png)
+
+<br><br>
+
+There are many load methods to create RequestBuilder:
+
+1. A new request builder for downloading content to cache and returning the cache File:
+
+![](https://i.imgur.com/uoGkT38.png)
+
+<br><br>
+
+2. A new request builder for loading a Drawable:
+
+![](https://i.imgur.com/sjzJmY4.png)
+
+<br><br>
+
+### RequestBuilder
+
+RequestBuilder is a generic class used to build requests, such as setting RequestOption, thumbnails, etc.
+
+Many of the overload methods in RequestManager correspond to the overload method in RequestBuilder. **After the load method, the into method is called to set the ImageView or Target. In the into method, the Request is created and started.**
+
+![](https://i.imgur.com/ZusfpFL.png)
+
+<br><br>
+
+### Request
+
+There are three main classes for Request:
+
+**1. SingleRequest**
+
+**2. ThumbnailRequestCoordinator**
+
+**3. ErrorRequestCoordinator**
+
+**SingleRequest** is a class that is responsible for executing the request and reflecting the result to the Target.
+
+![](https://i.imgur.com/B2AozLR.png)
+
+<br><br>
+
+**ThumbnailRequestCoordinators** is a class that is used to coordinate two requests to load the original image and the thumbnail at the same time. The thumbnail does not need to be loaded after the original image is loaded. All these controls are all controlled by this class.
+
+![](https://i.imgur.com/EGzl3Wj.png)
+
+<br><br>
+
+When we fail to load the image, we might want to continue to load another image through the network or other means, for example:
+
+When we use error in this way, it will eventually create an **ErrorRequestCoordinator** object.
+
+![](https://i.imgur.com/0ZYh06b.png)
+
+<br><br>
+
+### Target
+
+**Target represents a resource that can be loaded by Glide and has a lifecycle.**
+
+When we call the **RequestBuilder#into method**, the Target implementation class of the corresponding type will be created based on the incoming parameters.
+
+Glide provides ImageViewTarget on ImageView by default, AppWidgetTarget on AppWidget, FutureTarget for synchronously loading images.
+
+![](https://i.imgur.com/CM9JeWz.gif)
+
+<br><br>
+
+### GlideModule
+
+**GlideModule is an interface allowing lazy configuration of Glide.**
+
+The code of GlideModule is straightforward:
+
+**You can see that the interface is annotated as deprecated. Glide recommends using AppGlideModule instead.**
+
+The GlideModule interface itself has no code content, but it inherits the RegistersComponents and AppliesOptions interfaces.
+
+![](https://i.imgur.com/4AveDyG.png)
+
+<br><br>
+
+### ModelLoader
+
+A factory interface for translating an arbitrarily complex data model into a concrete data type that can be used by a DataFetcher to obtain the data for a resource represented by the model.
+
+**This interface has two objectives:**
+
+1. To translate a specific model into a data type that can be decoded into a resource.
+
+2. To allow a model to be combined with the dimensions of the view to fetch a resource of a specific size.
+
+![](https://i.imgur.com/seJAa7e.png)
+
+<br><br>
+
+### DataFetcher
+
+DataFetcher is an interface.
+
+The internal implementation is to initiate a network request or open a file, or open a resource, etc.
+
+**After the loading is completed, the callback is made through the DataFetcher$DataCallback interface.**
+
+![](https://i.imgur.com/4hi6tro.png)
+
+<br><br>
+
+There are two methods in DataCallback:
+
+They Represent the data load success or load failure callback respectively.
+
+![](https://i.imgur.com/cKcZhhu.png)
+
+<br><br>
+
+### Encoder
+
+**Encoder is an interface for writing data to some persistent data store (i.e. a local File cache).**
+
+There is only one method called encode and the comments explain it quite well.
+
+![](https://i.imgur.com/4EtFJwa.png)
+
+<br><br>
+
+### ResourceDecoder
+
+ResourceDecoder is an interface for decoding resources. It is used to decode the original data into the corresponding data type.
+
+![](https://i.imgur.com/rapvc4e.png)
+
+<br><br>
+
+### Engine
+
+**Engine is a class which is responsible for starting loads and managing active and cached resources.**
+
+Focusing on the load method, this method mainly does the following:
+
+**1. Build Key by request.**
+
+**2. Obtain resources from active resources and return when obtained.**
+
+**3. Get the resource from the cache and return it directly when you get it.**
+
+**4. Judge whether the current request is being executed, if yes, return directly.**
+
+**5. Build EngineJob and DecodeJob and execute.**
+
+![](https://i.imgur.com/lKSicmU.png)
+
+<br><br>
+
+### EngineJob
+
+This is mainly used to execute DecodeJob and manage the callback of loading completion and various listeners.
+
+![](https://i.imgur.com/u195k4v.png)
+
+<br><br>
+
+### DecodeJob
+
+DecodeJob is a class responsible for decoding resources either from cached data or from the original source and applying transformations and transcodes.
+
+The loading of images is ultimately implemented through DataFetcher, but it is not directly called here. DataFetcherGenerator is used here.
+
+![](https://i.imgur.com/NYv3MMF.png)
+
+<br><br>
+
+### References
+
+[https://github.com/bumptech/glide](https://github.com/bumptech/glide)  
+
+**Relevant Video on "Awesome Dev Notes" YouTube**
+
+<div class="embed-responsive embed-responsive-16by9"><iframe id="player" class="embed-responsive-item" src="https://www.youtube.com/embed/3o1kGd708a4" allowfullscreen="" allow="autoplay"></iframe>
+
+### Contributions
+
+**_Contributions and Pull requests are welcomed at [https://github.com/androiddevnotes](https://github.com/androiddevnotes) repositories!_**
+
+🐣
