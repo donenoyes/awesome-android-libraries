@@ -1,14 +1,14 @@
 **Table of Contents**
 
-1. [One line](#one-line)
-2. [Glide](#glide)
-3. [GlideBuilder](#glidebuilder)
-4. [RequestManagerRetriever](#requestmanagerretriever)
-5. [RequestManager](#requestmanager)
-6. [RequestBuilder](#requestbuilder)
-7. [Request](#request)
-8. [Target](#target)
-9. [GlideModule](#glidemodule)
+1. [Glide Cache Categories](#glide-cache-categories)
+2. [Glide Cache Responsibilities](#glide-cache-responsibilities)
+3. [Glide Cache Key](#glide-cache-key)
+4. [Memory Cache Read](#memory-cache-read)
+5. [LRU Algorithm and Weak References](#lru-algorithm-and-weak-references)
+6. [Acquired Variable](#acquired-variable)
+7. [Memory Cache Write](#memory-cache-write)
+8. [Memory Cache Overview](#memory-cache-overview)
+9. [Disk Cache](#disk-cache)
 10. [ModelLoader](#modelloader)
 11. [DataFetcher](#datafetcher)
 12. [Encoder](#encoder)
@@ -19,283 +19,191 @@
 17. [References](#references)
 18. [Contributions](#contributions)
 
-**The internals of the Glide Image Loading Library - Analyzing the Source Code** blog post focuses on the source code behind the one single line of Glide. This blog is in no way exhaustive. Glide library though simple is HUGE behind the scenes. We do not cover the caching mechanism here, coming soon.
+**The internals of the Glide Caching Mechanism** blog post focuses on the source code behind the Glide Cache. This blog acts as an overview of the components involved.
 
-### One line
+### Glide Cache Categories
 
-Generally speaking, we use the following code to load an image:
+Glide cache is divided into memory cache and disk cache. **The memory cache is composed of weak references + LruCache.**
+
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/2DPPvQV.png">
+</div>
+
+<br><br>
+
+**The image resources that Glide needs to cache are divided into two categories:**
+
+**The original picture (Source):** the initial size & resolution of the picture source
+
+**Converted picture (Result):** the picture after size scaling and size compression
+
+When using Glide to load pictures, Glide compresses and converts the pictures according to the View by default, and does not display the original pictures 
+
+**The access to the cache is in the Engine class.**
 
 **Glide.with(this).load(url).into(imageView);**
 
-We will explore the source code behind this line.
+<br><br>
 
-![](https://i.imgur.com/boFWs3F.png)
+### Glide Cache Responsibilities
+
+**The main function of memory cache is to prevent applications from repeatedly reading image data into memory.**
+
+**The main function of the disk cache is to prevent applications from repeatedly downloading and reading data from the network or other places.**
 
 <br><br>
 
-### Glide
+### Glide Cache Key
 
-**Exploring the Source Code:**
+**Caching is to solve the problem of repeated loading,** so there must be a key to distinguish different image resources.
 
-Let us take a look at the modules in Glide.
+From the code that generates the key below, we can see that the way Glide generates the key is complicated. **There are many parameters that determine the cache key, including the model, signature, width, height, transformations, resourceClass, transcodeClass, options**
 
-![](https://i.imgur.com/r2q9OEV.png)
+**We can assume that for almost any configuration change, it will cause multiple cache keys to be generated for the same picture.** For example: loading the same image into multiple ImageViews of different sizes will generate two cached images. 
 
-<br><br>
-
-Understanding the main outermost classes. First, we have Glide.
-
-Glide is a singleton class, and the instance can be obtained through the **Glide#get(Context)** method.
-
-![](https://i.imgur.com/JV1gDLY.png)
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/f26jN9z.png">
+</div>
 
 <br><br>
 
-**The Glide class is a global configuration class.** Encoder, Decoder, ModelLoader ... are all set here. It also provides an interface for creating RequestManager (Glide#with() method). We take a look at the RequestManager later.
+### Memory Cache Read
 
-When using Glide, the **Glide#with()** method is called first to create a RequestManager. The with() method in Glide has five overloads:
+**Glide enables the memory cache by default.** The following memory caching method can only be used when the memory is turned on.
 
-**The Glide#with() method delegates the creation of RequestManager to RequestManagerRetriever. RequestManagerRetriever is a singleton class and calls get(Context) to create RequestManager.**
+You can skip the memory cache by doing:
 
-![](https://i.imgur.com/TredNey.png)
+```java
 
-<br><br>
+skipMemoryCache(true)
 
-### GlideBuilder
+```
 
-GlideBuilder is a class used to create Glide instances, which contains many getters and setter methods, such as setting BitmapPool, MemoryCache, ArrayPool, DiskCache, MemorySizeCalculator, and a few more.
+**The memory cache is composed of weak references + LruCache.**
 
-![](https://i.imgur.com/JSqqt1R.png)
+The memory cache code is implemented in **Engine#load()** class. This is the same class where Cache Key is generated.
 
-<br><br>
-
-These array pools, cache implementations, etc. will eventually be used as **parameters of the Glide constructor to create Glide instances.**
-
-![](https://i.imgur.com/tSTSsUs.png)
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/RSa6eCF.png">
+</div>
 
 <br><br>
 
-### RequestManagerRetriever
+**Glide divides the memory cache into two parts: one uses the LruCache algorithm mechanism, the other uses the weak reference mechanism.**
 
-[https://www.adobe.com/in/products/aftereffects.html](https://www.adobe.com/in/products/aftereffects.html)  
+When the memory cache is obtained, it will be cached from the above two areas through two methods
 
-**Understanding the RequestManagerRetriever**
+**loadFromCache():** Get the cache from the memory cache using the LruCache algorithm mechanism
 
-![](https://i.imgur.com/GJ1AHGL.png)
-
-<br><br>
-
-The 5 overloaded Glide#with() methods mentioned earlier correspond to the 5 overloaded get() methods in RequestManagerRetriever.
-
-**The logic for creating RequestManager is as follows:**
-
-If the parameter of the with method is Activity or Fragment, call the **fragmentGet(Context, android.app.FragmentManager)** method in RequestManagerRetriever to create the RequestManager.
-
-![](https://i.imgur.com/N2a8z3x.png)
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/RGRfC16.png">
+</div>
 
 <br><br>
 
-If the parameter of the with method is Fragment or FragmentActivity, call **supportFragmentGet(Context, FragmentManager)** method to create RequestManager.
+**loadFromActiveResources():** Get the cache from the memory cache using the weak reference mechanism
 
-![](https://i.imgur.com/9sRhUQJ.png)
-
-<br><br>
-
-TIf the parameter of the with method is Context, it will determine whether the source belongs to FragmentActivity and Activity. If it is, it will be evaluated according to the above logic, otherwise, the **getApplicationManager(Context)** method will be called to create the RequestManager.
-
-![](https://i.imgur.com/Kn8l41M.png)
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/DDeggrZ.png">
+</div>
 
 <br><br>
 
-**If the background thread calls Glide#with() or the system version is less than 17 i.e JELLY_BEAN_MR1,** the getApplicationManager(Context) method will eventually be called to create the RequestManager.
-
-![](https://i.imgur.com/rivXZ2V.png)
+**If the cached picture is not obtained by the above two methods (that is, there is no cache for the picture in the memory cache), a new thread is started to load the picture.**
 
 <br><br>
 
-### RequestManager
+### LRU Algorithm and Weak References
 
-![](https://i.imgur.com/ctxazZx.png)
+If you wondering what LRU Algorithm and Weak Reference is:
 
-<br><br>
+**The principle of the LruCache algorithm:** Store the most recently used objects in the LinkedHashMap by means of strong references; when the cache is full, remove the least recently used objects from the memory
 
-**We all know that when using Glide to load a picture if the current screen is destroyed or invisible, it will stop loading the image, but when we use Glide to load the image, we just pass a Context object, so how does Glide get the screen lifecycle through a context object?**
-
-Through the introduction of the RequestManagerRetriever, we know that a FragmentManager parameter is required when creating a RequestManager (except for the global RequestManager), now when creating a RequestManager, an invisible Fragment will be created first, and added to the current screen through FragmentManager, and this invisible Fragment can be used to detect the lifecycle of the screen.
-
-**The code ensures that each Activity/Fragment contains only one RequestManagerFragment and one RequestManager**.
-
-![](https://i.imgur.com/ctxazZx.png)
+**Weak references:** Weakly referenced objects have a shorter lifecycle because When the JVM performs garbage collection, once a weakly referenced object is found, it will be recycled (regardless of whether the memory is sufficient)
 
 <br><br>
 
-There are many load methods to create RequestBuilder:
+### Acquired Variable
 
-1. A new request builder for downloading content to cache and returning the cache File:
+The pictures that are in use are cached by weak references, and the pictures that are not in use are cached by LruCache. **This is achieved through the picture reference counter (acquired variable). EngineResource# acquire()**
 
-![](https://i.imgur.com/uoGkT38.png)
+**This acquired variable is used to record the number of times the picture is referenced. Calling the acquire() method will increase the variable by 1, and calling the release() method will decrease the variable by 1.**
 
-<br><br>
-
-2. A new request builder for loading a Drawable:
-
-![](https://i.imgur.com/sjzJmY4.png)
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/C5RyTxT.png">
+</div>
 
 <br><br>
 
-### RequestBuilder
+### Memory Cache Write
 
-RequestBuilder is a generic class used to build requests, such as setting RequestOption, thumbnails, etc.
+The cache write is after the image is loaded. Taking a look at **Engine#load()** method again.
 
-Many of the overload methods in RequestManager correspond to the overload method in RequestBuilder. **After the load method, the into method is called to set the ImageView or Target. In the into method, the Request is created and started.**
+**There are two key objects here, EngineJob and DecodeJob.**
 
-![](https://i.imgur.com/ZusfpFL.png)
+**EngineJob** which maintain a thread pool internally to manage resource loading and notify callbacks when resources are loaded
 
-<br><br>
+**DecodeJob** is a class responsible for decoding resources either from cached data or from the original source and applying transformations and transcodes.
 
-### Request
-
-There are three main classes for Request:
-
-**1. SingleRequest**
-
-**2. ThumbnailRequestCoordinator**
-
-**3. ErrorRequestCoordinator**
-
-**SingleRequest** is a class that is responsible for executing the request and reflecting the result to the Target.
-
-![](https://i.imgur.com/B2AozLR.png)
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/pEJW20A.png">
+</div>
 
 <br><br>
 
-**ThumbnailRequestCoordinators** is a class that is used to coordinate two requests to load the original image and the thumbnail at the same time. The thumbnail does not need to be loaded after the original image is loaded. All these controls are all controlled by this class.
+**The weakly referenced cache will be cleaned up when the memory is insufficient, while the memory cache based on LruCache is strongly referenced, so it will not be cleaned up due to memory reasons.**
 
-![](https://i.imgur.com/EGzl3Wj.png)
+**LruCache will clear out the least recently used cached data only when the cached data reaches the upper limit of the cache space.**
 
-<br><br>
+The implementation mechanisms of the two caches are based on **hash tables**, but LruCache maintains a linked list in addition to the hash table data structure.
 
-When we fail to load the image, we might want to continue to load another image through the network or other means, for example:
+The cache key of weak reference type is the same as LruCache, but the value is of weak reference type.
 
-When we use error in this way, it will eventually create an **ErrorRequestCoordinator** object.
+**In addition to being released when the memory is insufficient, the weak reference type cache will also be cleaned up when the engine's resources are released.**
 
-![](https://i.imgur.com/0ZYh06b.png)
-
-<br><br>
-
-### Target
-
-**Target represents a resource that can be loaded by Glide and has a lifecycle.**
-
-When we call the **RequestBuilder#into method**, the Target implementation class of the corresponding type will be created based on the incoming parameters.
-
-Glide provides ImageViewTarget on ImageView by default, AppWidgetTarget on AppWidget, FutureTarget for synchronously loading images.
-
-![](https://i.imgur.com/CM9JeWz.gif)
+<div class="row  justify-content-center">
+  <img class="img-fluid text-center" src = "https://i.imgur.com/0CrM8fl.png">
+</div>
 
 <br><br>
 
-### GlideModule
+The cache based on weak references always exists and cannot be disabled by the user, but the **user can turn off the cache based on LruCache.**
 
-**GlideModule is an interface allowing lazy configuration of Glide.**
-
-The code of GlideModule is straightforward:
-
-**You can see that the interface is annotated as deprecated. Glide recommends using AppGlideModule instead.**
-
-The GlideModule interface itself has no code content, but it inherits the RegistersComponents and AppliesOptions interfaces.
-
-![](https://i.imgur.com/4AveDyG.png)
+**In essence, weak reference-based caching and LruCache-based caching are for different application scenarios. Weak reference caching is a type of cache, but this kind of cache is more affected by available memory than LruCache.**
 
 <br><br>
 
-### ModelLoader
+### Memory Cache Overview
 
-A factory interface for translating an arbitrarily complex data model into a concrete data type that can be used by a DataFetcher to obtain the data for a resource represented by the model.
+**When reading the memory cache,** it first reads from the memory cache of the LruCache algorithm mechanism and then reads from the memory cache of the weak reference mechanism.
 
-**This interface has two objectives:**
-
-1. To translate a specific model into a data type that can be decoded into a resource.
-
-2. To allow a model to be combined with the dimensions of the view to fetch a resource of a specific size.
-
-![](https://i.imgur.com/seJAa7e.png)
+**When writing to the memory cache,** first write to the memory cache of the weak reference mechanism, and then write to the memory cache of the LruCache algorithm mechanism when the picture is no longer used
 
 <br><br>
 
-### DataFetcher
+### Disk Cache
 
-DataFetcher is an interface.
+**Glide 5 disk cache strategy**
 
-The internal implementation is to initiate a network request or open a file, or open a resource, etc.
+**DiskCacheStrategy.DATA -->** Only cache the original picture
 
-**After the loading is completed, the callback is made through the DataFetcher$DataCallback interface.**
+**DiskCacheStrategy.RESOURCE -->** Only cache the converted pictures
 
-![](https://i.imgur.com/4hi6tro.png)
+**DiskCacheStrategy.ALL -->** cache both the original picture and the converted picture. For remote pictures, cache DATA and RESOURCE. For local pictures, only cache RESOURCE
 
-<br><br>
+**DiskCacheStrategy.AUTOMATIC -->** Default strategy, try to use the best strategy for local and remote pictures. When downloading network pictures, use DATA. For local pictures, use RESOURCE
 
-There are two methods in DataCallback:
+**DiskCacheStrategy.NONE -->** Do not cache any content
 
-They Represent the data load success or load failure callback respectively.
+**Glide cache is divided into weak reference + LruCache + DiskLruCache**
 
-![](https://i.imgur.com/cKcZhhu.png)
+**The order of reading data is weak reference > LruCache > DiskLruCache > network.**
 
-<br><br>
+**The order of writing cache is network –> DiskLruCache–> LruCache–> weak reference**
 
-### Encoder
+Disk caching is implemented through DiskLruCache, and different types of cached pictures can be obtained according to different caching strategies. 
 
-**Encoder is an interface for writing data to some persistent data store (i.e. a local File cache).**
-
-There is only one method called encode and the comments explain it quite well.
-
-![](https://i.imgur.com/4EtFJwa.png)
-
-<br><br>
-
-### ResourceDecoder
-
-ResourceDecoder is an interface for decoding resources. It is used to decode the original data into the corresponding data type.
-
-![](https://i.imgur.com/rapvc4e.png)
-
-<br><br>
-
-### Engine
-
-**Engine is a class which is responsible for starting loads and managing active and cached resources.**
-
-Focusing on the load method, this method mainly does the following:
-
-**1. Build Key by request.**
-
-**2. Obtain resources from active resources and return when obtained.**
-
-**3. Get the resource from the cache and return it directly when you get it.**
-
-**4. Judge whether the current request is being executed, if yes, return directly.**
-
-**5. Build EngineJob and DecodeJob and execute.**
-
-![](https://i.imgur.com/lKSicmU.png)
-
-<br><br>
-
-### EngineJob
-
-This is mainly used to execute DecodeJob and manage the callback of loading completion and various listeners.
-
-![](https://i.imgur.com/u195k4v.png)
-
-<br><br>
-
-### DecodeJob
-
-DecodeJob is a class responsible for decoding resources either from cached data or from the original source and applying transformations and transcodes.
-
-The loading of images is ultimately implemented through DataFetcher, but it is not directly called here. DataFetcherGenerator is used here.
-
-![](https://i.imgur.com/NYv3MMF.png)
+Its logic is: first fetch from the converted cache. if it is not available, then get the data from the original (unconverted) cache. if that is not possible then load the image data from the network.
 
 <br><br>
 
@@ -305,9 +213,11 @@ The loading of images is ultimately implemented through DataFetcher, but it is n
 
 **Relevant Video on "Awesome Dev Notes" YouTube**
 
-<div class="embed-responsive embed-responsive-16by9"><iframe id="player" class="embed-responsive-item" src="https://www.youtube.com/embed/3o1kGd708a4" allowfullscreen="" allow="autoplay"></iframe>
+<div class="embed-responsive embed-responsive-16by9"><iframe id="player" class="embed-responsive-item" src="https://www.youtube.com/embed/a9tqWZhx280" allowfullscreen="" allow="autoplay"></iframe>
 
 ### Contributions
+
+**_For Open-source discussions, android dev questions, and content creation please join [Discord](https://discord.gg/vBnEhuC)_** 
 
 **_Contributions and Pull requests are welcomed at [https://github.com/androiddevnotes](https://github.com/androiddevnotes) repositories!_**
 
